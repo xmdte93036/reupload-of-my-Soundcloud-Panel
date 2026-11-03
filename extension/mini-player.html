@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>SoundCloud Mini Player</title>
+    <link rel="stylesheet" href="themes.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            width: 428px;
+            height: 252px;
+            min-width: 428px;
+            min-height: 252px;
+            max-width: 428px;
+            max-height: 252px;
+            margin: 0;
+            padding: 20px;
+            background: transparent;
+            color: white;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+            overflow: hidden;
+            box-sizing: border-box;
+            position: relative;
+            -webkit-app-region: drag;
+        }
+
+        .bass-bars {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            z-index: 1;
+            pointer-events: none;
+            overflow: hidden;
+            display: grid;
+            grid-template-columns: repeat(200, minmax(0, 1fr));
+            grid-template-rows: repeat(1, minmax(0, 1fr));
+            gap: 0 1px;
+            padding: 0;
+            box-sizing: border-box;
+            border-radius: 0;
+            background: linear-gradient(
+                to top,
+                rgba(0, 0, 0, 0.4) 0%,
+                rgba(0, 0, 0, 0.14) 50%,
+                rgba(0, 0, 0, 0.05) 100%
+            );
+            opacity: 0.88;
+            align-items: stretch;
+        }
+
+        .bass-cell {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            min-width: 0;
+            min-height: 0;
+        }
+
+        .bass-bar {
+            width: 100%;
+            max-width: 2px;
+            min-width: 1px;
+            flex: 0 0 auto;
+            background: linear-gradient(
+                to top,
+                rgba(255, 255, 255, 0.95),
+                rgba(210, 225, 255, 0.6),
+                rgba(255, 255, 255, 0.2)
+            );
+            box-shadow: 0 0 4px rgba(170, 200, 255, 0.3);
+            transform-origin: bottom;
+            height: 12%;
+            transition: height 0.02s ease-out;
+            border-radius: 1px;
+        }
+        
+        .player-container {
+            background: rgba(24, 24, 27, 0.92);
+            backdrop-filter: blur(14px);
+            border-radius: 22px;
+            padding: 14px 16px;
+            width: 100%;
+            max-width: 400px;
+            min-height: 132px;
+            box-shadow: 0 10px 28px rgba(0, 0, 0, 0.55);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+            -webkit-app-region: drag;
+        }
+        
+        .main-content {
+            display: flex;
+            flex: 1;
+            align-items: center;
+            gap: 14px;
+            min-height: 0;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .album-art-section {
+            flex-shrink: 0;
+        }
+        
+        .album-art {
+            width: 76px;
+            height: 76px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            color: rgba(255, 255, 255, 0.6);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .album-art img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 14px;
+        }
+
+        .album-cover-art {
+            position: absolute;
+            inset: 0;
+            z-index: 3;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 14px;
+        }
+
+        .album-art-gif {
+            position: absolute;
+            inset: 0;
+            z-index: 2;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 14px;
+            opacity: 0.26;
+            pointer-events: none;
+            mix-blend-mode: screen;
+        }
+        
+        .album-art.playing {
+            animation: pulse 0.3s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .track-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-width: 0;
+            padding-right: 0;
+            margin-top: -5px;
+        }
+        
+        .song-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            overflow: hidden;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            width: 200%;
+            max-width: 200%;
+        }
+
+        .song-title .marquee {
+            display: flex;
+            width: max-content;
+            will-change: transform;
+            animation: marquee 8s linear infinite;
+        }
+
+        .song-title .marquee.is-static {
+            animation: none;
+        }
+
+        .song-title .marquee__item {
+            white-space: nowrap;
+            padding-right: 60px;
+        }
+
+        @keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-33.33%); }
+        }
+        
+        .artist-name {
+            display: block;
+            font-size: 12px;
+            font-weight: 500;
+            opacity: 0.72;
+            margin-bottom: 3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+            min-height: 0;
+        }
+
+        .artist-name:empty {
+            display: none;
+        }
+        
+        .play-status {
+            font-size: 11px;
+            opacity: 0.6;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .status-indicator {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #4ade80;
+            animation: blink 2s infinite;
+        }
+        
+        .status-indicator.paused {
+            background: #fbbf24;
+            animation: none;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .controls-section {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 0;
+            gap: 8px;
+            flex-shrink: 0;
+            margin-left: auto;
+            position: relative;
+            top: 20px;
+        }
+        
+        .control-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            -webkit-app-region: no-drag;
+        }
+        
+        .control-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        
+        .control-btn:hover::before {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .control-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .control-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        }
+        
+        .play-btn {
+            width: 28px;
+            height: 28px;
+            font-size: 14px;
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 255, 255, 0.18);
+        }
+        
+        .play-btn:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+        }
+
+        .theme-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            -webkit-app-region: no-drag;
+        }
+
+        .theme-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .loading-spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="theme-regular">
+    <div class="player-container">
+        <div class="bass-bars" id="bassBars"></div>
+        <div class="main-content">
+            <div class="album-art-section">
+                <div class="album-art" id="albumArt">
+                    <img id="albumCoverArt" class="album-cover-art" alt="" style="display:none" />
+                    <img id="albumGifDefault" alt="" style="display:none" />
+                    <img id="albumGifOverlay" class="album-art-gif" alt="" style="display:none" />
+                </div>
+            </div>
+            
+            <div class="track-info">
+                <div class="song-title" id="songTitle">
+                    <div class="marquee" id="songMarquee">
+                        <span class="marquee__item" id="songTitleText">Waiting for SoundCloud…</span>
+                        <span class="marquee__item" id="songTitleTextClone">Waiting for SoundCloud…</span>
+                        <span class="marquee__item" id="songTitleTextClone2">Waiting for SoundCloud…</span>
+                    </div>
+                </div>
+                <div class="artist-name" id="artistName"></div>
+                <div class="play-status">
+                    <div class="status-indicator paused" id="statusIndicator"></div>
+                    <span id="playStatus">Click extension icon for themes</span>
+                </div>
+            </div>
+
+            <div class="controls-section">
+                <button class="control-btn" id="prevBtn" title="Previous Track">
+                    <span>⏮️</span>
+                </button>
+                <button class="control-btn play-btn" id="playBtn" title="Play/Pause">
+                    <span id="playBtnIcon">▶️</span>
+                </button>
+                <button class="control-btn" id="nextBtn" title="Next Track">
+                    <span>⏭️</span>
+                </button>
+                <button class="theme-btn" id="themeBtn" title="Change Theme">
+                    <span>🎨</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="mini-player.js"></script>
+</body>
+</html>

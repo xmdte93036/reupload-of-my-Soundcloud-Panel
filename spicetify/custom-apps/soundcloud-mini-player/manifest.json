@@ -1,0 +1,8 @@
+{
+  "name": {
+    "en": "Mini Player"
+  },
+  "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" height=\"16\" width=\"16\" viewBox=\"0 0 16 16\" fill=\"currentColor\"><path d=\"M3 1.713a.7.7 0 0 1 1.05-.607l10.89 6.288a.7.7 0 0 1 0 1.212L4.05 14.894A.7.7 0 0 1 3 14.288V1.713z\"/></svg>",
+  "active-icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" height=\"16\" width=\"16\" viewBox=\"0 0 16 16\" fill=\"currentColor\"><path d=\"M3 1.713a.7.7 0 0 1 1.05-.607l10.89 6.288a.7.7 0 0 1 0 1.212L4.05 14.894A.7.7 0 0 1 3 14.288V1.713z\"/><path d=\"M3 3.5v9\" stroke=\"currentColor\" stroke-width=\"1.2\"/></svg>",
+  "subfiles_extension": ["bridge.js"]
+}

@@ -1,0 +1,125 @@
+.scmp-app {
+  max-width: 42rem;
+}
+
+.scmp-header {
+  margin-bottom: 1.5rem;
+}
+
+.scmp-header h1 {
+  margin: 0 0 0.35rem;
+  font-size: 1.75rem;
+}
+
+.scmp-sub {
+  margin: 0;
+  opacity: 0.75;
+}
+
+.scmp-card {
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.scmp-card--ok {
+  border-left: 3px solid #1ed760;
+}
+
+.scmp-card--warn {
+  border-left: 3px solid #f59b23;
+}
+
+.scmp-card--flat {
+  background: transparent;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.scmp-card h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.85;
+}
+
+.scmp-mono {
+  font-family: ui-monospace, monospace;
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
+.scmp-hint {
+  margin-top: 0.75rem;
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+.scmp-cover {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 6px;
+  margin-bottom: 0.75rem;
+}
+
+.scmp-title {
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin: 0 0 0.25rem;
+}
+
+.scmp-artist {
+  margin: 0 0 0.35rem;
+  opacity: 0.85;
+}
+
+.scmp-meta {
+  margin: 0;
+  font-size: 0.85rem;
+  opacity: 0.65;
+}
+
+.scmp-list {
+  margin: 0;
+  padding-left: 1.2rem;
+  opacity: 0.85;
+}
+
+.scmp-list li {
+  margin-bottom: 0.35rem;
+}
+
+.scmp-save-target {
+  margin: 0 0 0.75rem;
+  font-weight: 600;
+}
+
+.scmp-field {
+  display: block;
+  margin-top: 0.5rem;
+}
+
+.scmp-field-label {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.85rem;
+  opacity: 0.75;
+}
+
+.scmp-select {
+  width: 100%;
+  max-width: 28rem;
+  padding: 0.45rem 0.6rem;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(0, 0, 0, 0.25);
+  color: inherit;
+  font: inherit;
+}
+
+.scmp-hint--error {
+  color: #f59b23;
+}

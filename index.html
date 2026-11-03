@@ -1,0 +1,1427 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>SoundCloud Mini Player</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --text: rgba(255, 255, 255, 0.96);
+            --text-muted: rgba(255, 255, 255, 0.72);
+            --card-bg: transparent;
+            --card-border: rgba(255, 255, 255, 0.12);
+            --card-shadow: transparent;
+            --art-bg: rgba(255, 255, 255, 0.08);
+
+            --btn-bg: rgba(255, 255, 255, 0.08);
+            --btn-bg-strong: rgba(255, 255, 255, 0.12);
+            --btn-border: rgba(255, 255, 255, 0.14);
+            --btn-border-strong: rgba(255, 255, 255, 0.18);
+
+            --tray-a: rgba(0, 0, 0, 0.4);
+            --tray-b: rgba(0, 0, 0, 0.14);
+            --tray-c: rgba(0, 0, 0, 0.05);
+
+            --bar-a: rgba(255, 255, 255, 0.95);
+            --bar-b: rgba(210, 225, 255, 0.6);
+            --bar-c: rgba(255, 255, 255, 0.2);
+            --bar-glow: rgba(170, 200, 255, 0.3);
+
+            /* Theme polish — rim gloss, layered shadow, artwork glow */
+            --accent-rim-soft: rgba(255, 98, 0, 0.11);
+            --inner-gloss: rgba(255, 255, 255, 0.06);
+            --album-glow:
+                0 4px 18px rgba(0, 0, 0, 0.45),
+                0 2px 6px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.08);
+            --accent-dot: rgba(74, 222, 128, 1);
+            --paused-dot: rgba(251, 191, 36, 1);
+        }
+
+        /* Default “Regular” deck — graphite surface + warm SoundCloud rim */
+        body.theme-regular {
+            --text: rgba(255, 255, 255, 0.97);
+            --text-muted: rgba(255, 255, 255, 0.68);
+            --card-bg:
+                radial-gradient(
+                    ellipse 115% 80% at 18% -8%,
+                    rgba(255, 110, 40, 0.13),
+                    rgba(255, 255, 255, 0) 54%
+                ),
+                linear-gradient(
+                    160deg,
+                    rgba(38, 36, 44, 0.96) 0%,
+                    rgba(18, 18, 24, 0.96) 48%,
+                    rgba(26, 24, 34, 0.97) 100%
+                );
+            --card-border: rgba(255, 255, 255, 0.095);
+            --btn-bg: rgba(255, 255, 255, 0.07);
+            --btn-bg-strong: rgba(255, 255, 255, 0.11);
+            --btn-border: rgba(255, 255, 255, 0.14);
+            --btn-border-strong: rgba(255, 255, 255, 0.2);
+            --accent-rim-soft: rgba(255, 78, 0, 0.16);
+            --inner-gloss: rgba(255, 255, 255, 0.1);
+            --album-glow:
+                0 6px 22px rgba(0, 0, 0, 0.5),
+                0 0 0 1px rgba(255, 85, 0, 0.08),
+                inset 0 1px 1px rgba(255, 255, 255, 0.1);
+            --bar-glow: rgba(255, 130, 60, 0.22);
+        }
+
+        body.theme-transparent {
+            --text: rgba(255, 255, 255, 0.95);
+            --text-muted: rgba(255, 255, 255, 0.65);
+            --card-bg: rgba(10, 10, 14, 0.22);
+            --card-border: rgba(255, 255, 255, 0.16);
+            --btn-bg: rgba(255, 255, 255, 0.06);
+            --btn-bg-strong: rgba(255, 255, 255, 0.09);
+            --btn-border: rgba(255, 255, 255, 0.18);
+            --btn-border-strong: rgba(255, 255, 255, 0.24);
+            --accent-rim-soft: rgba(255, 136, 64, 0.2);
+            --inner-gloss: rgba(255, 255, 255, 0.12);
+            --album-glow:
+                0 6px 26px rgba(0, 0, 0, 0.4),
+                inset 0 1px 2px rgba(255, 255, 255, 0.1);
+            --bar-a: rgba(250, 250, 255, 0.92);
+            --bar-b: rgba(220, 225, 255, 0.55);
+            --bar-c: rgba(255, 255, 255, 0.24);
+            --bar-glow: rgba(200, 215, 255, 0.28);
+        }
+
+        body.theme-autumn {
+            --card-bg:
+                radial-gradient(
+                    ellipse 100% 90% at 12% -10%,
+                    rgba(255, 160, 70, 0.11),
+                    rgba(255, 255, 255, 0) 52%
+                ),
+                linear-gradient(165deg, rgba(36, 30, 24, 0.94), rgba(20, 18, 20, 0.95));
+            --card-border: rgba(255, 200, 140, 0.14);
+            --btn-border: rgba(255, 200, 140, 0.18);
+            --btn-border-strong: rgba(255, 220, 170, 0.22);
+            --bar-a: rgba(255, 232, 210, 0.95);
+            --bar-b: rgba(255, 168, 88, 0.62);
+            --bar-c: rgba(255, 232, 210, 0.18);
+            --bar-glow: rgba(255, 160, 70, 0.28);
+            --accent-rim-soft: rgba(255, 150, 60, 0.18);
+            --inner-gloss: rgba(255, 212, 160, 0.08);
+            --album-glow:
+                0 5px 20px rgba(40, 20, 0, 0.48),
+                0 0 0 1px rgba(255, 160, 80, 0.12),
+                inset 0 1px 2px rgba(255, 200, 120, 0.12);
+        }
+
+        body.theme-winter {
+            --card-bg:
+                radial-gradient(
+                    ellipse 100% 92% at 14% -12%,
+                    rgba(120, 210, 255, 0.12),
+                    rgba(255, 255, 255, 0) 52%
+                ),
+                linear-gradient(158deg, rgba(26, 32, 44, 0.94), rgba(14, 20, 32, 0.96));
+            --card-border: rgba(160, 210, 255, 0.14);
+            --btn-border: rgba(160, 210, 255, 0.18);
+            --btn-border-strong: rgba(200, 235, 255, 0.22);
+            --bar-a: rgba(235, 250, 255, 0.95);
+            --bar-b: rgba(120, 200, 255, 0.62);
+            --bar-c: rgba(235, 250, 255, 0.16);
+            --bar-glow: rgba(120, 200, 255, 0.26);
+            --accent-rim-soft: rgba(140, 200, 255, 0.2);
+            --inner-gloss: rgba(215, 240, 255, 0.1);
+            --album-glow:
+                0 5px 22px rgba(0, 35, 60, 0.45),
+                0 0 0 1px rgba(140, 200, 255, 0.14),
+                inset 0 1px 2px rgba(235, 250, 255, 0.12);
+        }
+
+        body.theme-kawaii {
+            --card-bg:
+                radial-gradient(
+                    ellipse 100% 94% at 12% -8%,
+                    rgba(255, 158, 220, 0.14),
+                    rgba(255, 255, 255, 0) 52%
+                ),
+                linear-gradient(165deg, rgba(42, 28, 40, 0.94), rgba(26, 20, 32, 0.96));
+            --card-border: rgba(255, 170, 220, 0.16);
+            --btn-border: rgba(255, 170, 220, 0.2);
+            --btn-border-strong: rgba(255, 210, 240, 0.24);
+            --bar-a: rgba(255, 245, 252, 0.95);
+            --bar-b: rgba(255, 145, 210, 0.62);
+            --bar-c: rgba(255, 245, 252, 0.18);
+            --bar-glow: rgba(255, 145, 210, 0.28);
+            --accent-rim-soft: rgba(255, 160, 220, 0.22);
+            --inner-gloss: rgba(255, 238, 250, 0.1);
+            --album-glow:
+                0 5px 22px rgba(60, 20, 50, 0.42),
+                0 0 0 1px rgba(255, 158, 220, 0.16),
+                inset 0 1px 2px rgba(255, 230, 245, 0.12);
+        }
+
+        body.theme-transparent .player-container {
+            backdrop-filter: blur(32px);
+            -webkit-backdrop-filter: blur(32px);
+        }
+
+        body.theme-transparent .control-btn {
+            backdrop-filter: blur(26px);
+            -webkit-backdrop-filter: blur(26px);
+        }
+
+        /* -- BODY: Must match BrowserWindow size in main.js. Transparent background centers the player card. -- */
+        body {
+            width: 360px;
+            height: 105px;
+            min-width: 360px;
+            min-height: 105px;
+            max-width: 360px;
+            max-height: 105px;
+            margin: 0;
+            padding: 0;
+            background: transparent;
+            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+            overflow: hidden;
+            box-sizing: border-box;
+            position: relative;
+            -webkit-app-region: drag;
+        }
+
+        /*
+          Full-card grid visualizer: thin vertical bars across the whole card (not one bottom strip).
+        */
+        .bass-bars {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            z-index: 1;
+            pointer-events: none;
+            overflow: hidden;
+            display: grid;
+            grid-template-columns: repeat(40, minmax(0, 1fr));
+            grid-template-rows: repeat(1, minmax(0, 1fr));
+            gap: 0 1px;
+            padding: 0;
+            box-sizing: border-box;
+            border-radius: 0;
+            background: transparent;
+            align-items: stretch;
+        }
+
+        .bass-cell {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            min-width: 0;
+            min-height: 0;
+        }
+
+        .bass-bar {
+            width: 100%;
+            max-width: 2px;
+            min-width: 1px;
+            flex: 0 0 auto;
+            background: linear-gradient(
+                to top,
+                var(--bar-a),
+                var(--bar-b),
+                var(--bar-c)
+            );
+            transform-origin: bottom;
+            height: 12%;
+            border-radius: 1px;
+        }
+        
+        /* -- PLAYER-CONTAINER: The dark rounded card that holds everything. Controls card size, background color, border radius, shadow. -- */
+        .player-container {
+            background: var(--card-bg);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border-radius: 22px;
+            padding: 8px 16px 6px;
+            width: 100%;
+            max-width: 100%;
+            min-height: 100%;
+            box-shadow:
+                0 2px 0 var(--accent-rim-soft),
+                inset 0 1px 0 var(--inner-gloss);
+            border: 1px solid var(--card-border);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: stretch;
+            overflow: hidden;
+            position: relative;
+            -webkit-app-region: drag;
+        }
+        
+        /* -- MAIN-CONTENT: Art on the left; title spans the top, buttons sit bottom-right. -- */
+        .main-content {
+            display: grid;
+            flex: 1;
+            min-height: 0;
+            min-width: 0;
+            width: 100%;
+            grid-template-columns: 64px minmax(0, 1fr);
+            grid-template-rows: minmax(0, 1fr) auto;
+            column-gap: 8px;
+            row-gap: 2px;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* -- ALBUM-ART-SECTION: Wrapper for the cover art; spans both rows so the buttons line up with its bottom edge. -- */
+        .album-art-section {
+            grid-column: 1;
+            grid-row: 1 / span 2;
+            align-self: center;
+            flex-shrink: 0;
+            position: relative;
+            z-index: 3;
+        }
+        
+        /* -- ALBUM-ART: The rounded cover art area. Controls size, border-radius, background placeholder color, shadow. 64px matches the reference layout. -- */
+        .album-art {
+            width: 64px;
+            height: 64px;
+            border-radius: 12px;
+            background: var(--art-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            color: rgba(255, 255, 255, 0.6);
+            box-shadow: var(--album-glow);
+            /* transform is driven per-frame by the bass analyser, so no CSS transition to lag behind it */
+            position: relative;
+            overflow: hidden;
+            /* Grow from the left so a bass hit expands into the gap, not over the title. */
+            transform-origin: 0% 100%;
+        }
+        
+        /* -- ALBUM-ART IMG: The actual cover image inside the circle. Controls how the image fills the circle. -- */
+        .album-art img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 14px;
+        }
+
+        .album-cover-art {
+            position: absolute;
+            inset: 0;
+            z-index: 3;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 14px;
+        }
+
+        #albumGifDefault {
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .album-art-gif {
+            position: absolute;
+            inset: 0;
+            z-index: 2;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 14px;
+            opacity: 0.26;
+            pointer-events: none;
+            mix-blend-mode: screen;
+        }
+        
+        /* Cover art scaling comes from applyBassToArt() in the analyser loop, not a CSS timer. */
+        
+        /* -- TRACK-INFO: The middle text column (song title + artist + play status). Controls vertical layout of text. Add margin-top to move all text up/down. Add padding-right to extend title width. -- */
+        .track-info {
+            grid-column: 2;
+            /* Span both rows: the controls overlay on top, so title+artist get the full 64px art height
+               instead of sharing it with a reserved button row. */
+            grid-row: 1 / span 2;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            /* min-width: 0 lets the column shrink below its content. */
+            min-width: 0;
+            overflow: hidden;
+            padding-bottom: 2px;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* -- SONG-TITLE: The song title line. Controls font size, weight, margin below. Overflow hidden for marquee. -- */
+        .song-title {
+            font-size: 17px;
+            font-weight: 600;
+            margin-bottom: 2px;
+            overflow: hidden;
+            width: 100%;
+            max-width: 100%;
+            min-width: 0;
+            letter-spacing: 0.015em;
+            position: relative;
+            top: -1px;
+        }
+
+        /* -- SONG-TITLE .MARQUEE: Six copies × ~16.67% translate = seamless loop (shorter per-step than three copies). -- */
+        .song-title .marquee {
+            --marquee-duration: 10s;
+            display: flex;
+            width: max-content;
+            will-change: transform;
+            animation: marquee var(--marquee-duration, 10s) linear infinite;
+        }
+
+        .song-title .marquee.is-static {
+            animation: none;
+        }
+
+        .song-title .marquee__item {
+            white-space: nowrap;
+            padding-right: 60px;
+        }
+
+        @keyframes marquee {
+            0% { transform: translateX(0); }
+            /* 6 identical segments → shift by exactly one segment per loop */
+            100% { transform: translateX(-16.6667%); }
+        }
+        
+        /* -- ARTIST-NAME: The artist name line below the title. -- */
+        .artist-name {
+            display: block;
+            font-size: 12px;
+            font-weight: 500;
+            opacity: 0.72;
+            margin-bottom: 2px;
+            overflow: hidden;
+            /* Reserved space so the line shows even when the artist is empty for a beat. */
+            min-height: 15px;
+            line-height: 15px;
+            white-space: nowrap;
+        }
+
+        .artist-name .marquee {
+            --marquee-duration: 9s;
+            display: flex;
+            width: max-content;
+            will-change: transform;
+            animation: marquee var(--marquee-duration, 9s) linear infinite;
+        }
+
+        .artist-name .marquee.is-static {
+            animation: none;
+        }
+
+        .artist-name .marquee__item {
+            white-space: nowrap;
+            padding-right: 42px;
+        }
+
+        .artist-name:empty {
+            display: none;
+        }
+        
+        /* -- PLAY-STATUS: The "Paused" / "Playing" status line with the green/yellow dot. Controls font size and layout. -- */
+        .play-status {
+            font-size: 11px;
+            opacity: 0.6;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            /* One line only: wrapping plus the old top offset made it collide with the artist row. */
+            white-space: nowrap;
+            overflow: hidden;
+            max-width: 100%;
+            padding-right: 120px; /* keep clear of the overlaid control buttons */
+        }
+        
+        .play-status span {
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* -- STATUS-INDICATOR: The small green/yellow dot next to Paused/Playing. Green = playing, yellow = paused. -- */
+        .status-indicator {
+            width: 6px;
+            height: 6px;
+            flex-shrink: 0;
+            border-radius: 50%;
+            background: var(--accent-dot);
+            animation: blink 2s infinite;
+        }
+        
+        .status-indicator.paused {
+            background: var(--paused-dot);
+            animation: none;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        /* -- CONTROLS-SECTION: Bottom-right row. `top` nudges the whole row up/down (negative = up). -- */
+        .controls-section {
+            grid-column: 2;
+            /* Overlays the text column's bottom-right instead of owning a grid row. */
+            grid-row: 1 / span 2;
+            justify-self: end;
+            align-self: end;
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
+            margin-left: 0;
+            position: relative;
+            top: -2px;
+            z-index: 5;
+        }
+        
+        /* -- CONTROL-BTN: All control buttons (prev, next). Controls button size (28x28), background, border, hover effects. Change WIDTH/HEIGHT to resize. -- */
+        .control-btn {
+            background: rgba(255, 255, 255, 0.14);
+            border: 1px solid rgba(255, 255, 255, 0.26);
+            color: white;
+            width: 28px;
+            height: 28px;
+            min-width: 28px; /* flex items collapsed to ovals before */
+            padding: 0;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            -webkit-app-region: no-drag;
+        }
+
+        .control-icon {
+            width: 14px;
+            height: 14px;
+            object-fit: contain;
+            display: block;
+            pointer-events: none;
+        }
+        
+        .control-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.16);
+            transform: translate(-50%, -50%);
+            transition: width 0.3s, height 0.3s;
+        }
+        
+        .control-btn:hover::before {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .control-btn:hover {
+            transform: translateY(-1px);
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .control-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* -- PLAY-BTN: The middle play/pause button. Same size as other buttons (28x28) but brighter background. -- */
+        .play-btn {
+            width: 28px;
+            height: 28px;
+            font-size: 14px;
+            background: rgba(255, 255, 255, 0.26);
+            border-color: rgba(255, 255, 255, 0.42);
+        }
+
+        .play-btn .control-icon {
+            width: 16px;
+            height: 16px;
+        }
+        
+        .play-btn:hover {
+            transform: translateY(-1px) scale(1.05);
+            background: rgba(255, 255, 255, 0.34);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 24px;
+            height: 24px;
+            z-index: 10;
+            cursor: pointer;
+            /* Icon art is pure black; filter + drop-shadow make it read on the dark card. */
+            filter: invert(1) brightness(2) drop-shadow(0 0 2px rgba(0, 0, 0, 0.85));
+            opacity: 0.85;
+            border-radius: 50%;
+            padding: 2px;
+            transition: opacity 0.2s ease, background 0.2s ease;
+            -webkit-app-region: no-drag;
+            user-select: none;
+            pointer-events: auto;
+        }
+
+        .close-btn:hover {
+            opacity: 1;
+            background: rgba(255, 255, 255, 0.22);
+        }
+
+        .loading-spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="theme-regular">
+    <div class="player-container">
+        <img class="close-btn" id="closeBtn" alt="Close" />
+        <div class="bass-bars" id="bassBars"></div>
+        <div class="main-content">
+            <div class="album-art-section">
+                <div class="album-art" id="albumArt">
+                    <img id="albumCoverArt" class="album-cover-art" alt="" style="display:none" />
+                    <img id="albumGifDefault" alt="" style="display:none" />
+                    <img id="albumGifOverlay" class="album-art-gif" alt="" style="display:none" />
+                </div>
+            </div>
+            
+            <div class="track-info">
+                <div class="song-title" id="songTitle">
+                    <div class="marquee" id="songMarquee">
+                        <span class="marquee__item" id="songTitleText">Press Play or Reload</span>
+                        <span class="marquee__item" id="songTitleTextClone1">Press Play or Reload</span>
+                        <span class="marquee__item" id="songTitleTextClone2">Press Play or Reload</span>
+                        <span class="marquee__item" id="songTitleTextClone3">Press Play or Reload</span>
+                        <span class="marquee__item" id="songTitleTextClone4">Press Play or Reload</span>
+                        <span class="marquee__item" id="songTitleTextClone5">Press Play or Reload</span>
+                    </div>
+                </div>
+                <div class="artist-name" id="artistName">
+                    <div class="marquee is-static" id="artistMarquee">
+                        <span class="marquee__item" id="artistNameText"></span>
+                        <span class="marquee__item" id="artistNameTextClone1"></span>
+                        <span class="marquee__item" id="artistNameTextClone2"></span>
+                        <span class="marquee__item" id="artistNameTextClone3"></span>
+                        <span class="marquee__item" id="artistNameTextClone4"></span>
+                        <span class="marquee__item" id="artistNameTextClone5"></span>
+                    </div>
+                </div>
+                <div class="play-status">
+                    <div class="status-indicator paused" id="statusIndicator"></div>
+                    <span id="playStatus">Waiting for bridge…</span>
+                </div>
+            </div>
+
+            <div class="controls-section">
+                <button class="control-btn" id="likeBtn" title="Save Track">
+                    <img class="control-icon" src="assets/ui-icons/save.png" alt="Save" />
+                </button>
+                <button class="control-btn" id="prevBtn" title="Previous Track">
+                    <img class="control-icon" src="assets/ui-icons/back-arrow.png" alt="Previous" />
+                </button>
+                <button class="control-btn play-btn" id="playBtn" title="Play/Pause">
+                    <span id="playBtnIcon">
+                        <img class="control-icon" src="assets/ui-icons/play-button.png" alt="Play/Pause" />
+                    </span>
+                </button>
+                <button class="control-btn" id="nextBtn" title="Next Track">
+                    <img class="control-icon" src="assets/ui-icons/next-arrow.png" alt="Next" />
+                </button>
+                <button class="control-btn" id="themeBtn" title="Change theme">
+                    <img class="control-icon" src="assets/ui-icons/theme-button.png" alt="Theme" />
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { ipcRenderer } = require('electron');
+
+        // Close button
+        const closeBtn = document.getElementById('closeBtn');
+        if (closeBtn) {
+            const path = require('path');
+            const closeImgPath = 'file:///' + path.join(__dirname, 'assets', 'ui-icons', 'close.png').replace(/\\/g, '/');
+            closeBtn.src = closeImgPath;
+            closeBtn.addEventListener('click', () => {
+                ipcRenderer.send('app:close');
+            });
+        }
+
+        const THEMES = ['regular', 'transparent', 'autumn', 'winter', 'kawaii'];
+        function applyTheme(themeId) {
+            const t = THEMES.includes(themeId) ? themeId : 'regular';
+            document.body.classList.remove(
+                'theme-regular',
+                'theme-transparent',
+                'theme-autumn',
+                'theme-winter',
+                'theme-kawaii'
+            );
+            document.body.classList.add(`theme-${t}`);
+            try {
+                localStorage.setItem('miniPlayerTheme', t);
+            } catch {}
+        }
+
+        function getSavedTheme() {
+            try {
+                return localStorage.getItem('miniPlayerTheme') || 'regular';
+            } catch {
+                return 'regular';
+            }
+        }
+
+        function cycleTheme() {
+            const current =
+                (document.body.className.match(/\btheme-([a-z]+)\b/) || [])[1] || getSavedTheme();
+            const idx = Math.max(0, THEMES.indexOf(current));
+            const next = THEMES[(idx + 1) % THEMES.length];
+            applyTheme(next);
+        }
+
+        function setPlayBtnVisual(isPlaying) {
+            const playBtnIcon = document.getElementById('playBtnIcon');
+            if (!playBtnIcon) return;
+            if (isPlaying) {
+                playBtnIcon.innerHTML = '<img class="control-icon" src="assets/ui-icons/unpause.png" alt="Pause" />';
+            } else {
+                playBtnIcon.innerHTML = '<img class="control-icon" src="assets/ui-icons/play-button.png" alt="Play/Pause" />';
+            }
+        }
+        
+        let gifRotateTimer = null;
+        let currentGifHref = null;
+        let currentGifBase = null;
+        /** When real track artwork covers the tile, pause cycling so we do not advance behind it. */
+        let gifRotationSuspended = false;
+
+        function clearGifRotation() {
+            if (gifRotateTimer) {
+                clearTimeout(gifRotateTimer);
+                gifRotateTimer = null;
+            }
+        }
+
+        function cacheBustFileUrl(href) {
+            try {
+                const u = new URL(href);
+                u.searchParams.set('t', String(Date.now()));
+                return u.href;
+            } catch {
+                return href + (href.includes('?') ? '&' : '?') + 't=' + Date.now();
+            }
+        }
+
+        function stripFileUrlQuery(href) {
+            try {
+                const u = new URL(href);
+                u.search = '';
+                return u.href;
+            } catch {
+                const i = href.indexOf('?');
+                return i >= 0 ? href.slice(0, i) : href;
+            }
+        }
+
+        function hideDefaultGifs() {
+            const def = document.getElementById('albumGifDefault');
+            const overlay = document.getElementById('albumGifOverlay');
+            if (def) def.style.display = 'none';
+            if (overlay) overlay.style.display = 'none';
+        }
+
+        function applyGifPair(href) {
+            const def = document.getElementById('albumGifDefault');
+            const overlay = document.getElementById('albumGifOverlay');
+            const cover = document.getElementById('albumCoverArt');
+            if (cover && cover.style.display !== 'none' && cover.getAttribute('src')) return;
+            const wire = (img) => {
+                if (!img) return;
+                img.onerror = () => {
+                    img.removeAttribute('src');
+                    img.style.display = 'none';
+                };
+                img.onload = () => {
+                    img.style.display = 'block';
+                };
+                img.src = href;
+            };
+            wire(def);
+            wire(overlay);
+            requestAnimationFrame(() => {
+                if (def && def.src && def.complete) def.style.display = 'block';
+                if (overlay && overlay.src && overlay.complete) overlay.style.display = 'block';
+            });
+        }
+
+        async function scheduleNextGifRotation() {
+            clearGifRotation();
+            if (!currentGifHref || gifRotationSuspended) return;
+            let duration = 10000;
+            try {
+                const ms = await ipcRenderer.invoke('gifs:get-rotate-interval-ms');
+                if (Number.isFinite(ms) && ms >= 2000) duration = ms;
+            } catch (e) {
+                /* keep default */
+            }
+            gifRotateTimer = setTimeout(async () => {
+                gifRotateTimer = null;
+                try {
+                    const res = await ipcRenderer.invoke('gifs:get-next', currentGifBase);
+                    const hrefRaw = res && typeof res === 'object' && res.href ? res.href : typeof res === 'string' ? res : null;
+                    const base = res && typeof res === 'object' && res.base ? res.base : null;
+                    if (!hrefRaw) return;
+                    let nextHref = hrefRaw;
+                    if (base && currentGifBase && base === currentGifBase) {
+                        nextHref = cacheBustFileUrl(stripFileUrlQuery(hrefRaw));
+                    }
+                    currentGifHref = nextHref;
+                    currentGifBase = base || currentGifBase;
+                    applyGifPair(nextHref);
+                    scheduleNextGifRotation();
+                } catch (e) {
+                    setTimeout(() => scheduleNextGifRotation(), 2000);
+                }
+            }, duration);
+        }
+
+        async function initRandomGifsFromConfig() {
+            let res = null;
+            try {
+                res = await ipcRenderer.invoke('gifs:get-random');
+            } catch (e) {
+                /* noop */
+            }
+            const href = res && typeof res === 'object' && res.href ? res.href : typeof res === 'string' ? res : null;
+            const base = res && typeof res === 'object' && res.base ? res.base : null;
+            if (!href) {
+                clearGifRotation();
+                currentGifHref = null;
+                currentGifBase = null;
+                hideDefaultGifs();
+                return;
+            }
+            currentGifHref = href;
+            currentGifBase = base;
+            applyGifPair(href);
+            scheduleNextGifRotation();
+        }
+
+        const BASS_GRID_COLS = 40;
+        const BASS_GRID_ROWS = 1;
+
+        function createBassBars() {
+            const bassBarsContainer = document.getElementById('bassBars');
+            bassBarsContainer.replaceChildren();
+            for (let r = 0; r < BASS_GRID_ROWS; r++) {
+                for (let c = 0; c < BASS_GRID_COLS; c++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'bass-cell';
+                    const bar = document.createElement('div');
+                    bar.className = 'bass-bar';
+                    bar.style.height = '10%';
+                    cell.appendChild(bar);
+                    bassBarsContainer.appendChild(cell);
+                }
+            }
+        }
+
+        // Desktop audio visualization (system output loopback)
+        let audioContext = null;
+        let analyser = null;
+        let dataArray = null;
+        let animationId = null;
+        let visualBars = [];
+        const albumArtEl = document.getElementById('albumArt');
+        let artScale = 1;
+
+        async function setupAudioVisualization() {
+            try {
+                await initDesktopAudioCapture();
+            } catch (desktopErr) {
+                try {
+                    await initMicrophoneFallback();
+                } catch (micErr) {
+                    console.warn('Audio visualizer unavailable:', micErr?.message || micErr);
+                    setIdleBars();
+                }
+            }
+        }
+
+        async function initDesktopAudioCapture() {
+            const stream = await navigator.mediaDevices.getDisplayMedia({
+                video: true,
+                audio: true,
+            });
+            // We only analyse audio; holding the video track keeps a screen capture alive.
+            stream.getVideoTracks().forEach((t) => t.stop());
+            setupAudioAnalysis(stream);
+        }
+
+        async function initMicrophoneFallback() {
+            const stream = await navigator.mediaDevices.getUserMedia({
+                audio: true,
+                video: false,
+            });
+            setupAudioAnalysis(stream);
+        }
+
+        function setupAudioAnalysis(stream) {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            analyser = audioContext.createAnalyser();
+            // 1024 gives ~47 Hz bins at 48 kHz, so kick/snare hit separate bins instead of one smeared blob.
+            analyser.fftSize = 1024;
+            // Very low smoothing keeps kick transients immediate instead of averaging them away.
+            analyser.smoothingTimeConstant = 0.1;
+            dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+            const source = audioContext.createMediaStreamSource(stream);
+            source.connect(analyser);
+
+            startVisualization();
+        }
+
+        function ensureAudioContextRunning() {
+            if (audioContext && audioContext.state === 'suspended') {
+                audioContext.resume().catch(() => {});
+            }
+        }
+
+        function setIdleBars() {
+            for (const bar of visualBars) {
+                bar.style.height = '8%';
+            }
+            artScale = 1;
+            if (albumArtEl) albumArtEl.style.transform = '';
+        }
+
+        function applyBassToArt(bass) {
+            const target = bass < 6
+                ? 1
+                : 1 + Math.pow(bass / 255, 0.55) * 0.22;
+            // Instant attack, quick release: a large, beat-synced hit without lingering.
+            artScale = target > artScale
+                ? target
+                : artScale + (target - artScale) * 0.3;
+            if (albumArtEl) albumArtEl.style.transform = `scale(${Math.min(artScale, 1.22).toFixed(3)})`;
+        }
+
+        function startVisualization() {
+            if (!analyser) return;
+
+            const noiseGate = 6; // lower gate: catches quieter bass notes without idle hiss
+            const maxHeight = 98;
+            const minHeight = 6;
+            const fMin = 40;
+            const fMax = 9000;
+
+            let lastVizUpdate = 0;
+            const lastHeights = new Array(visualBars.length).fill(-1);
+            const animate = () => {
+                animationId = requestAnimationFrame(animate);
+                // Hidden window: whole app is invisible, so stop drawing (frees CPU/GPU and the capture graph).
+                if (document.hidden) return;
+                const now = performance.now();
+                if (now - lastVizUpdate < 8) return; // update whenever the display can take it; was 16ms
+                lastVizUpdate = now;
+                analyser.getByteFrequencyData(dataArray);
+
+                const bins = dataArray.length;
+                const n = visualBars.length;
+                if (n < 1 || bins < 8) return;
+
+                // Bins 1-3 cover roughly 47-187 Hz at 48 kHz / fftSize 1024: kick and bass.
+                applyBassToArt(Math.max(dataArray[1] || 0, dataArray[2] || 0, dataArray[3] || 0));
+
+                // Log-spaced bins from fMin..fMax, so low frequencies get most of the bars
+                // instead of everything above ~11 kHz clamping to the last bin.
+                const binHz = audioContext.sampleRate / analyser.fftSize;
+                const topBin = Math.min(bins - 1, fMax / binHz);
+                for (let i = 0; i < n; i++) {
+                    const bar = visualBars[i];
+                    // 0 at the centre bar -> 1 at the edges. Uses /n, not /(n-1): with an even
+                    // count the two middle bars are the centre, and *2 would put peak frequency there.
+                    const side = Math.abs((i + 0.5) / n - 0.5) * 2;
+
+                    const hz = fMin * Math.pow(fMax / fMin, side);
+                    const pos = Math.min(topBin, hz / binHz);
+                    const lo = Math.floor(pos);
+                    const frac = pos - lo;
+                    const v = (dataArray[lo] || 0) * (1 - frac) + (dataArray[lo + 1] || 0) * frac;
+
+                    const gated = v < noiseGate ? 0 : v;
+                    // Stronger curve: quiet-to-mid bass gets visible movement sooner.
+                    const eased = Math.pow(gated / 255, 0.5);
+                    // Center bars get full height; edge bars are attenuated so they still move but less
+                    const attenuation = 1 - side * 0.35;
+                    let h = gated ? minHeight + eased * (maxHeight - minHeight) * attenuation : minHeight;
+                    // Fall back quickly instead of snapping to the floor; reads as punchy, not jittery.
+                    if (h < lastHeights[i] - 1) h = Math.max(h, lastHeights[i] - 12);
+
+                    // Only touch the DOM on real change — 40 writes/frame was the point of this fix.
+                    if (Math.abs(h - lastHeights[i]) < 0.5) continue;
+                    lastHeights[i] = h;
+                    bar.style.height = `${h}%`;
+                }
+            };
+
+            animate();
+        }
+        
+        createBassBars();
+        visualBars = Array.from(document.querySelectorAll('.bass-cell .bass-bar'));
+        applyTheme(getSavedTheme());
+        initRandomGifsFromConfig();
+        setupAudioVisualization();
+        
+        let currentTrack = {
+            song: 'Unknown Track',
+            artist: 'Unknown Artist',
+            albumArt: null,
+            isPlaying: false,
+        };
+
+        /** WebSocket ↔ bridge (Electron), not SoundCloud availability */
+        let bridgeConnected = false;
+
+        function isUnknownMeta(track) {
+            const s = track.song || '';
+            const a = track.artist || '';
+            const badSong = !s.trim() || s === 'Unknown Track';
+            const badArtist = !a.trim() || a === 'Unknown Artist';
+            return badSong && badArtist;
+        }
+
+        function refreshPlaybackStatusLine(track) {
+            const statusIndicator = document.getElementById('statusIndicator');
+            const playStatus = document.getElementById('playStatus');
+
+            if (!bridgeConnected) {
+                statusIndicator.classList.add('paused');
+                playStatus.textContent = 'Reconnecting to bridge…';
+                return;
+            }
+
+            if (!track || isUnknownMeta(track)) {
+                statusIndicator.classList.add('paused');
+                playStatus.textContent = 'Play or reload'; // was 'Play something or Reload the page' — wraps in the shorter row
+                return;
+            }
+
+            if (track.isPlaying) {
+                statusIndicator.classList.remove('paused');
+                playStatus.textContent = 'Playing';
+            } else {
+                statusIndicator.classList.add('paused');
+                playStatus.textContent = 'Paused';
+            }
+        }
+
+        /** Pull "feat. X / ft. X / featuring X" names out of a title so the artist line can show them. */
+        function extractFeats(rawTitle) {
+            if (!rawTitle || typeof rawTitle !== 'string') return { clean: rawTitle, feats: [] };
+            const m = rawTitle.match(
+                /\s*(?:\(|\[)?\s*(?:feat\.?|ft\.?|featuring)\s+([^)\]]+?)\s*(?:\)|\])?\s*$/i
+            );
+            if (!m) return { clean: rawTitle, feats: [] };
+            return {
+                clean: rawTitle.slice(0, m.index).replace(/\s{2,}/g, ' ').trim(),
+                feats: m[1].split(/[,&,]+|\s+&\s+/).map(s => s.trim()).filter(Boolean),
+            };
+        }
+
+        /** SoundCloud often sends "Artist - Title" in the track field. */
+        function splitDashTitle(raw) {
+            if (!raw || typeof raw !== 'string') return null;
+            const match = raw.match(/^(.{1,80}?)\s+[-–—]\s+(.+)$/);
+            if (!match) return null;
+            const artist = match[1].trim();
+            const title = match[2].trim();
+            if (!artist || !title || title.length > 160) return null;
+            return { artist, title };
+        }
+
+        /** SoundCloud often sends one line like "Artist / Track title" (spaced slash). */
+        function splitSpacedSlashTitle(raw) {
+            if (!raw || typeof raw !== 'string') return null;
+            const m = raw.match(/^(.+?)\s\/\s(.+)$/);
+            if (!m) return null;
+            const left = m[1].trim();
+            const right = m[2].trim();
+            if (left.length < 1 || right.length < 1 || left.length > 120) return null;
+            return { artist: left, title: right };
+        }
+
+        function normKey(s) {
+            return String(s || '')
+                .toLowerCase()
+                .replace(/\s+/g, '')
+                .replace(/[^a-z0-9]/g, '');
+        }
+
+        function escRegExp(s) {
+            return String(s || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
+
+        function updateTrackInfo(track) {
+            track = Object.assign({}, currentTrack, track);
+
+            const rawSong = track.song && track.song.trim() ? track.song : 'Waiting for a track…';
+            let song = rawSong
+                .replace(/^(current\s*track|now\s*playing|track|playing)\s*:\s*/i, '')
+                .trim();
+            while (song.length >= 4 && song.length % 2 === 0) {
+                const half = song.length / 2;
+                if (song.slice(0, half) !== song.slice(half)) break;
+                song = song.slice(0, half).trim();
+            }
+            let fromBadge =
+                track.artist && track.artist.trim() && track.artist !== 'Unknown Artist'
+                    ? track.artist.trim()
+                    : '';
+            const slash = splitSpacedSlashTitle(song);
+            if (slash) {
+                if (!fromBadge) {
+                    song = slash.title;
+                    fromBadge = slash.artist;
+                    track.artist = slash.artist;
+                } else if (normKey(slash.artist) === normKey(fromBadge)) {
+                    song = slash.title;
+                }
+            }
+
+            // When the track field contains its own "Artist - Title" form, use that pair.
+            // This fixes uploader badges that differ from the artist named in the track title.
+            const dash = splitDashTitle(song);
+            if (dash) {
+                song = dash.title;
+                fromBadge = dash.artist;
+                track.artist = dash.artist;
+            }
+
+            // Only remove a title prefix when it matches SoundCloud's artist field.
+            if (fromBadge && song) {
+                const badge = fromBadge.trim();
+                const esc = escRegExp(badge);
+                const m1 = song.match(new RegExp(`^${esc}\\s*[-–—]\\s*(.+)$`, 'i'));
+                if (m1 && m1[1]) song = m1[1].trim();
+                const m2 = song.match(new RegExp(`^${esc}\\s*:\\s*(.+)$`, 'i'));
+                if (m2 && m2[1]) song = m2[1].trim();
+            }
+
+            // "Song (feat. X)" → title shows "Song", artist line shows "Artist • feat. X".
+            const featInfo = extractFeats(song);
+            song = featInfo.clean || song;
+
+            applyMarqueeText({
+                text: song,
+                hostId: 'songTitle',
+                marqueeId: 'songMarquee',
+                primaryItemId: 'songTitleText',
+                minDuration: 4.75,
+                defaultDuration: 10,
+            });
+
+            const WINDOW_TITLE_APP = 'SoundCloud Mini Player';
+            const titleSong = typeof song === 'string' ? song.trim() : '';
+            const titlePlausible =
+                titleSong &&
+                !/^waiting for soundcloud/i.test(titleSong) &&
+                !/^unknown track$/i.test(titleSong) &&
+                titleSong !== 'Press Play or Reload';
+            if (titlePlausible) {
+                const suffix =
+                    titleSong.length > 96 ? `${titleSong.slice(0, 93)}…` : titleSong;
+                document.title = `${WINDOW_TITLE_APP} — ${suffix}`;
+            } else {
+                document.title = WINDOW_TITLE_APP;
+            }
+
+            let displayArtist = fromBadge;
+            if (!displayArtist && track.artist && track.artist.trim() && track.artist !== 'Unknown Artist') {
+                displayArtist = track.artist.trim();
+            }
+            if (!displayArtist && currentTrack.artist && currentTrack.artist !== 'Unknown Artist') {
+                displayArtist = currentTrack.artist.trim();
+                track.artist = currentTrack.artist;
+            }
+            const featSuffix = featInfo.feats.length ? `feat. ${featInfo.feats.join(', ')}` : '';
+            const artistLine = [displayArtist, featSuffix].filter(Boolean).join(' • ');
+
+            const artistHost = document.getElementById('artistName');
+            if (artistHost) {
+                const artistText = artistLine;
+                if (artistText) {
+                    artistHost.style.display = '';
+                    applyMarqueeText({
+                        text: artistText,
+                        hostId: 'artistName',
+                        marqueeId: 'artistMarquee',
+                        primaryItemId: 'artistNameText',
+                        minDuration: 4.75,
+                        defaultDuration: 9,
+                    });
+                } else {
+                    artistHost.style.display = 'none';
+                }
+            }
+
+            updateAlbumArt(track.albumArt);
+
+            // Instant play button update
+            const playBtn = document.getElementById('playBtn');
+
+            if (track.isPlaying) {
+                setPlayBtnVisual(true);
+                playBtn.title = 'Pause';
+            } else {
+                setPlayBtnVisual(false);
+                playBtn.title = 'Play';
+            }
+
+            refreshPlaybackStatusLine(track);
+            track.song = song;
+            if (displayArtist) track.artist = displayArtist;
+            currentTrack = track;
+        }
+
+        function updateAlbumArt(albumArtUrl) {
+            const cover = document.getElementById('albumCoverArt');
+            const def = document.getElementById('albumGifDefault');
+            const overlay = document.getElementById('albumGifOverlay');
+
+            if (
+                typeof albumArtUrl === 'string' &&
+                (/^https?:\/\//i.test(albumArtUrl) || /^data:image\//i.test(albumArtUrl))
+            ) {
+                const preload = new Image();
+                preload.onload = () => {
+                    if (!cover) return;
+                    gifRotationSuspended = true;
+                    clearGifRotation();
+                    cover.onload = null;
+                    cover.onerror = () => showAlbumArtPlaceholder();
+                    cover.src = preload.src;
+                    cover.style.display = 'block';
+                    if (def) def.style.display = 'none';
+                    if (overlay) overlay.style.display = 'none';
+                };
+                preload.onerror = () => showAlbumArtPlaceholder();
+                preload.src = albumArtUrl;
+                return;
+            }
+
+            showAlbumArtPlaceholder();
+        }
+
+        function showAlbumArtPlaceholder() {
+            gifRotationSuspended = false;
+            const cover = document.getElementById('albumCoverArt');
+            if (cover) {
+                cover.removeAttribute('src');
+                cover.style.display = 'none';
+            }
+            if (currentGifHref) {
+                applyGifPair(currentGifHref);
+                const def = document.getElementById('albumGifDefault');
+                const overlay = document.getElementById('albumGifOverlay');
+                if (def && def.src) def.style.display = 'block';
+                if (overlay && overlay.src) overlay.style.display = 'block';
+            } else {
+                hideDefaultGifs();
+            }
+            scheduleNextGifRotation();
+        }
+
+        function applyBridgeDot(connected) {
+            bridgeConnected = !!connected;
+            refreshPlaybackStatusLine(currentTrack);
+        }
+
+        function applyMarqueeText({
+            text,
+            hostId,
+            marqueeId,
+            primaryItemId,
+            minDuration = 5,
+            defaultDuration = 10,
+        }) {
+            const marquee = document.getElementById(marqueeId);
+            const primary = document.getElementById(primaryItemId);
+            const host = document.getElementById(hostId);
+            const value = String(text || '').trim();
+            if (!marquee || !primary || !host) return;
+
+            const items = Array.from(marquee.querySelectorAll('.marquee__item'));
+            marquee.style.removeProperty('animation');
+            void marquee.offsetHeight;
+            // Important: when the text fits we hide the clone spans entirely.
+            // Otherwise their `padding-right` makes scrollWidth look too large,
+            // causing marquee animation even for short titles/names.
+            items.forEach((el, i) => {
+                el.textContent = i === 0 ? value : '';
+                el.style.display = i === 0 ? '' : 'none';
+            });
+
+            void primary.offsetWidth;
+            const fits = value.length === 0 || primary.scrollWidth <= (host.clientWidth || 0) + 3;
+            if (fits) {
+                marquee.classList.add('is-static');
+                marquee.style.setProperty('--marquee-duration', `${defaultDuration}s`);
+                // Keep clones hidden when static.
+                return;
+            }
+
+            const len = value.length;
+            const durSec = Math.max(
+                minDuration,
+                len <= 4 ? minDuration : len <= 8 ? minDuration + 1 : len <= 14 ? 7 : len <= 24 ? 8.75 : defaultDuration,
+            );
+            marquee.style.setProperty('--marquee-duration', `${durSec}s`);
+            items.forEach((el) => {
+                el.textContent = value;
+                el.style.display = '';
+            });
+            window.requestAnimationFrame(() => {
+                window.requestAnimationFrame(() => {
+                    marquee.classList.remove('is-static');
+                });
+            });
+        }
+        
+        // Professional button event handlers
+        document.getElementById('playBtn').addEventListener('click', () => {
+            ensureAudioContextRunning();
+            const command = {
+                action: currentTrack.isPlaying ? 'pause' : 'play',
+                timestamp: Date.now()
+            };
+
+            ipcRenderer.send('send-command', command);
+            
+            // Visual feedback
+            const playBtn = document.getElementById('playBtn');
+            playBtn.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                playBtn.style.transform = '';
+            }, 100);
+            
+            // Update button immediately for better UX
+            if (currentTrack.isPlaying) {
+                setPlayBtnVisual(false);
+                playBtn.title = 'Play';
+            } else {
+                setPlayBtnVisual(true);
+                playBtn.title = 'Pause';
+            }
+        });
+        
+        document.getElementById('nextBtn').addEventListener('click', () => {
+            ensureAudioContextRunning();
+            const command = { action: 'next', timestamp: Date.now() };
+            ipcRenderer.send('send-command', command);
+            
+            // Visual feedback
+            const nextBtn = document.getElementById('nextBtn');
+            nextBtn.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                nextBtn.style.transform = '';
+            }, 100);
+        });
+        
+        document.getElementById('prevBtn').addEventListener('click', () => {
+            ensureAudioContextRunning();
+            const command = { action: 'previous', timestamp: Date.now() };
+            ipcRenderer.send('send-command', command);
+            
+            // Visual feedback
+            const prevBtn = document.getElementById('prevBtn');
+            prevBtn.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                prevBtn.style.transform = '';
+            }, 100);
+        });
+
+        document.getElementById('likeBtn').addEventListener('click', () => {
+            ensureAudioContextRunning();
+            const command = { action: 'like', timestamp: Date.now() };
+            ipcRenderer.send('send-command', command);
+            const likeBtn = document.getElementById('likeBtn');
+            likeBtn.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                likeBtn.style.transform = '';
+            }, 100);
+        });
+
+        document.getElementById('themeBtn').addEventListener('click', () => {
+            cycleTheme();
+        });
+        
+        // IPC communication handlers
+        ipcRenderer.on('track-update', (event, track) => {
+            if (!bridgeConnected) applyBridgeDot(true);
+            updateTrackInfo(track);
+        });
+
+        ipcRenderer.on('connection-status', (event, status) => {
+            applyBridgeDot(status);
+        });
+        
+        document.addEventListener('pointerdown', () => {
+            ensureAudioContextRunning();
+        }, { once: true });
+        
+        applyBridgeDot(false);
+    </script>
+</body>
+</html>

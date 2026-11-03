@@ -1,0 +1,81 @@
+{
+  "name": "soundcloud-mini-player",
+  "version": "3.0.0",
+  "description": "SoundCloud mini-player with desktop visualizer and GIF artwork (open source)",
+  "main": "main.js",
+  "license": "MIT",
+  "author": "soundcloud-mini-player contributors",
+  "homepage": "https://github.com/mikerox147-cyber/Soundcloud-control-player",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mikerox147-cyber/Soundcloud-control-player.git"
+  },
+  "scripts": {
+    "start": "electron .",
+    "start:dev": "concurrently -n server,app -k \"node server.js\" \"npx wait-on tcp:127.0.0.1:8765 --timeout 120000 && npx electron .\"",
+    "server": "node server.js",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder --win portable:x64",
+    "dist:linux": "electron-builder --linux AppImage"
+  },
+  "build": {
+    "appId": "com.soundcloud.miniplayer.app",
+    "productName": "SoundCloud Mini Player",
+    "copyright": "Copyright © 2026 contributors",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "**/*",
+      "!release/**",
+      "!.git/**",
+      "gifs/**/*"
+    ],
+    "asar": false,
+    "extraResources": [
+      {
+        "from": "gifs",
+        "to": "gifs",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "spotify",
+        "to": "spotify",
+        "filter": ["**/*"]
+      }
+    ],
+    "win": {
+      "icon": "assets/wd.png",
+      "signAndEditExecutable": false,
+      "target": [
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "linux": {
+      "icon": "assets/wd.png",
+      "category": "AudioVideo",
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    }
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0",
+    "electron": "^41.5.0",
+    "electron-builder": "^25.1.8",
+    "wait-on": "^9.0.3"
+  },
+  "dependencies": {
+    "ws": "^8.14.0"
+  }
+}

@@ -1,0 +1,124 @@
+/* SoundCloud Mini Player Themes */
+
+/* Regular Black Theme (Default) */
+.theme-regular {
+  --bg-primary: rgba(24, 24, 27, 0.92);
+  --bg-secondary: rgba(255, 255, 255, 0.08);
+  --text-primary: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.72);
+  --accent: #ff5500;
+  --border: rgba(255, 255, 255, 0.08);
+  --bar-gradient: linear-gradient(to top, rgba(255, 255, 255, 0.95), rgba(210, 225, 255, 0.6), rgba(255, 255, 255, 0.2));
+  --bar-shadow: 0 0 4px rgba(170, 200, 255, 0.3);
+}
+
+/* Transparent Theme */
+.theme-transparent {
+  --bg-primary: rgba(24, 24, 27, 0.65);
+  --bg-secondary: rgba(255, 255, 255, 0.05);
+  --text-primary: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.8);
+  --accent: #00aaff;
+  --border: rgba(255, 255, 255, 0.15);
+  --bar-gradient: linear-gradient(to top, rgba(0, 170, 255, 0.8), rgba(100, 200, 255, 0.4), rgba(200, 230, 255, 0.1));
+  --bar-shadow: 0 0 6px rgba(0, 170, 255, 0.4);
+}
+
+/* Autumn Theme */
+.theme-autumn {
+  --bg-primary: rgba(92, 51, 23, 0.92);
+  --bg-secondary: rgba(255, 140, 0, 0.15);
+  --text-primary: #fff8e7;
+  --text-secondary: rgba(255, 200, 100, 0.8);
+  --accent: #ff6b35;
+  --border: rgba(255, 140, 0, 0.3);
+  --bar-gradient: linear-gradient(to top, rgba(255, 107, 53, 0.9), rgba(255, 165, 0, 0.5), rgba(255, 200, 100, 0.2));
+  --bar-shadow: 0 0 5px rgba(255, 140, 0, 0.4);
+}
+
+/* Winter/Snow Theme */
+.theme-winter {
+  --bg-primary: rgba(30, 60, 90, 0.92);
+  --bg-secondary: rgba(200, 220, 255, 0.1);
+  --text-primary: #e8f4ff;
+  --text-secondary: rgba(150, 200, 255, 0.8);
+  --accent: #4fc3f7;
+  --border: rgba(150, 200, 255, 0.2);
+  --bar-gradient: linear-gradient(to top, rgba(79, 195, 247, 0.85), rgba(150, 220, 255, 0.4), rgba(220, 240, 255, 0.15));
+  --bar-shadow: 0 0 4px rgba(79, 195, 247, 0.3);
+}
+
+/* Kawaii Theme */
+.theme-kawaii {
+  --bg-primary: rgba(255, 182, 193, 0.92);
+  --bg-secondary: rgba(255, 105, 180, 0.15);
+  --text-primary: #4a0080;
+  --text-secondary: rgba(138, 43, 226, 0.8);
+  --accent: #ff69b4;
+  --border: rgba(255, 105, 180, 0.3);
+  --bar-gradient: linear-gradient(to top, rgba(255, 105, 180, 0.8), rgba(255, 182, 193, 0.5), rgba(255, 218, 224, 0.2));
+  --bar-shadow: 0 0 6px rgba(255, 105, 180, 0.4);
+}
+
+/* Apply theme variables to player */
+.player-container {
+  background: var(--bg-primary) !important;
+  border-color: var(--border) !important;
+}
+
+.album-art {
+  background: var(--bg-secondary) !important;
+}
+
+.song-title {
+  color: var(--text-primary) !important;
+}
+
+.artist-name {
+  color: var(--text-secondary) !important;
+}
+
+.play-status {
+  color: var(--text-secondary) !important;
+}
+
+.control-btn {
+  background: var(--bg-secondary) !important;
+  border-color: var(--border) !important;
+  color: var(--text-primary) !important;
+}
+
+.control-btn:hover {
+  border-color: var(--accent) !important;
+}
+
+.play-btn {
+  background: var(--bg-secondary) !important;
+  border-color: var(--border) !important;
+}
+
+.status-indicator {
+  background: var(--accent) !important;
+}
+
+.bass-bar {
+  background: var(--bar-gradient) !important;
+  box-shadow: var(--bar-shadow) !important;
+}
+
+/* Theme-specific special effects */
+.theme-transparent .player-container {
+  backdrop-filter: blur(20px) !important;
+}
+
+.theme-autumn .player-container {
+  box-shadow: 0 10px 28px rgba(255, 140, 0, 0.3) !important;
+}
+
+.theme-winter .player-container {
+  box-shadow: 0 10px 28px rgba(79, 195, 247, 0.3) !important;
+}
+
+.theme-kawaii .player-container {
+  box-shadow: 0 10px 28px rgba(255, 105, 180, 0.3) !important;
+}

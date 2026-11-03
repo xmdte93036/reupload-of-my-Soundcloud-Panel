@@ -1,0 +1,36 @@
+# Dependencies
+node_modules/
+
+# Packaged builds
+release/
+dist/
+out/
+*.AppImage
+*.exe
+*.deb
+*.rpm
+*.snap
+*.dmg
+*.zip
+*.xpi
+
+# Logs and OS
+*.log
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editors
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Runtime save-target log (written when the app runs from source)
+spotify/save-target.txt
+
+# Leftover empty stubs from the original tree
+/npm
+/git
+/electron-builder
+/soundcloud-mini-player@1.0.0
