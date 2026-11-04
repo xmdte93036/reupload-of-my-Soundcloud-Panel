@@ -10,8 +10,8 @@ Grab the latest files from **Releases**:
 
 | Platform | File |
 | --- | --- |
-| Linux | `SoundCloud Mini Player-3.0.0.AppImage` |
-| Windows | `SoundCloud Mini Player 3.0.0.exe` (portable, no installer) |
+| Linux | `SoundCloud Mini Player-3.2.0.AppImage` |
+| Windows | `SoundCloud Mini Player 3.2.0.exe` (portable, no installer) |
 
 On first launch the app writes a Desktop shortcut to itself.
 
@@ -23,7 +23,7 @@ On first launch the app writes a Desktop shortcut to itself.
 
 ## Linux (Mint / Ubuntu)
 
-1. Download the AppImage and mark it executable: `chmod +x "SoundCloud Mini Player-3.0.0.AppImage"`
+1. Download the AppImage and mark it executable: `chmod +x "SoundCloud Mini Player-3.2.0.AppImage"`
 2. Double-click it (or run it from a terminal)
 3. Chrome → Extensions → Developer mode → **Load unpacked** → select the `extension` folder
 4. Play something on SoundCloud or [open.spotify.com](https://open.spotify.com)
@@ -86,7 +86,7 @@ Both produce the same output:
 | `dist/extension-chrome/` | Chrome/Edge — load unpacked |
 | `dist/extension-firefox/` | Firefox — load temporary add-on |
 | `dist/soundcloud-mini-player-chrome.zip` | Upload to the Chrome Web Store |
-| `dist/soundcloud-mini-player-firefox-v3.xpi` | Upload to AMO |
+| `dist/soundcloud-mini-player-firefox-v3.2.xpi` | Upload to AMO |
 
 The Firefox build renames `manifest-firefox.json` to `manifest.json`, so load `dist/extension-firefox/manifest.json` — not the source folder.
 
@@ -198,7 +198,22 @@ Numeric **keypad** (not the top-row numbers), while the mini player is running:
 
 ## GIFs
 
-Put `.gif` files in `gifs/`. Optional settings live in `gifs/config.json` (`files`, `gifRotateMs`, `fallbackLoopMs`, `durationMsByFile`).
+GIF artwork is optional and lives outside the portable app so updating or moving the binary never deletes your library:
+
+```text
+~/Documents/SoundCloud Mini Player/
+├── config.json
+└── *.gif
+```
+
+(If `Documents` does not exist, the folder is created in your home directory instead. GIFs bundled in an older `gifs/` folder are copied over on first launch.)
+
+- **Tray → Use GIFs** — checkbox toggle that turns the GIF layer on or off immediately, no restart.
+- **Tray → Open GIF Folder** — opens the folder so you can add or remove `.gif` files.
+
+Settings live in `config.json`: `enabled`, `files`, `gifRotateMs`, `fallbackLoopMs`, `durationMsByFile`.
+
+Track cover art still takes priority: when SoundCloud supplies artwork, it replaces the GIF until the cover is unavailable again.
 
 ## Spicetify
 

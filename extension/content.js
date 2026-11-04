@@ -1168,10 +1168,8 @@ if (typeof chrome !== 'undefined' && chrome.runtime) {
 // Initialize extension (singleton already enforced at top)
 connectWebSocket();
 
-// Background tabs: the DOM still mutates but nothing can watch the mini player, so idle.
-setInterval(() => {
-  if (!document.hidden) sendTrackInfo();
-}, 1200);
+// Polls even in background tabs: the mini player still needs the update.
+setInterval(sendTrackInfo, 1200);
 
 let playbackDomSyncTimer = null;
 function schedulePlaybackDomSync() {

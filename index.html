@@ -420,6 +420,12 @@
             min-height: 15px;
             line-height: 15px;
             white-space: nowrap;
+            /* Keep the uploader readable when visualizer bars pass behind the line. */
+            text-shadow:
+                -1px -1px 0 rgba(0, 0, 0, 0.9),
+                 1px -1px 0 rgba(0, 0, 0, 0.9),
+                -1px  1px 0 rgba(0, 0, 0, 0.9),
+                 1px  1px 0 rgba(0, 0, 0, 0.9);
         }
 
         .artist-name .marquee {
@@ -455,6 +461,12 @@
             overflow: hidden;
             max-width: 100%;
             padding-right: 120px; /* keep clear of the overlaid control buttons */
+            /* Same dark outline as the artist line so bars don't wash out "Playing" / "Paused". */
+            text-shadow:
+                -1px -1px 0 rgba(0, 0, 0, 0.9),
+                 1px -1px 0 rgba(0, 0, 0, 0.9),
+                -1px  1px 0 rgba(0, 0, 0, 0.9),
+                 1px  1px 0 rgba(0, 0, 0, 0.9);
         }
         
         .play-status span {
@@ -742,6 +754,8 @@
         let gifRotateTimer = null;
         let currentGifHref = null;
         let currentGifBase = null;
+        let gifEnabled = true;
+        let lastAlbumArtUrl = null;
         /** When real track artwork covers the tile, pause cycling so we do not advance behind it. */
         let gifRotationSuspended = false;
 
@@ -784,7 +798,11 @@
             const def = document.getElementById('albumGifDefault');
             const overlay = document.getElementById('albumGifOverlay');
             const cover = document.getElementById('albumCoverArt');
-            if (cover && cover.style.display !== 'none' && cover.getAttribute('src')) return;
+            if (!gifEnabled) return;
+            if (cover) {
+                cover.style.display = 'none';
+                cover.removeAttribute('src');
+            }
             const wire = (img) => {
                 if (!img) return;
                 img.onerror = () => {
@@ -806,7 +824,7 @@
 
         async function scheduleNextGifRotation() {
             clearGifRotation();
-            if (!currentGifHref || gifRotationSuspended) return;
+            if (!gifEnabled || !currentGifHref || gifRotationSuspended) return;
             let duration = 10000;
             try {
                 const ms = await ipcRenderer.invoke('gifs:get-rotate-interval-ms');
@@ -835,7 +853,23 @@
             }, duration);
         }
 
+        /** Reset GIF state and fall back to the track's own cover when GIFs are off. */
+        function applyGifEnabled(enabled) {
+            gifEnabled = enabled !== false;
+            if (!gifEnabled) {
+                clearGifRotation();
+                currentGifHref = null;
+                currentGifBase = null;
+                hideDefaultGifs();
+                updateAlbumArt(lastAlbumArtUrl);
+                return;
+            }
+            initRandomGifsFromConfig();
+        }
+
         async function initRandomGifsFromConfig() {
+            if (!gifEnabled) return;
+
             let res = null;
             try {
                 res = await ipcRenderer.invoke('gifs:get-random');
@@ -1021,7 +1055,13 @@
         createBassBars();
         visualBars = Array.from(document.querySelectorAll('.bass-cell .bass-bar'));
         applyTheme(getSavedTheme());
-        initRandomGifsFromConfig();
+        ipcRenderer.on('gifs:enabled-changed', (_event, enabled) => {
+            applyGifEnabled(enabled);
+        });
+        ipcRenderer
+            .invoke('gifs:is-enabled')
+            .then(applyGifEnabled)
+            .catch(() => initRandomGifsFromConfig());
         setupAudioVisualization();
         
         let currentTrack = {
@@ -1239,6 +1279,24 @@
             const cover = document.getElementById('albumCoverArt');
             const def = document.getElementById('albumGifDefault');
             const overlay = document.getElementById('albumGifOverlay');
+
+            lastAlbumArtUrl = albumArtUrl;
+
+            // GIF layer wins when enabled; the cover comes back when it is toggled off.
+            if (gifEnabled) {
+                if (currentGifHref) {
+                    gifRotationSuspended = false;
+                    applyGifPair(currentGifHref);
+                    const defEl = document.getElementById('albumGifDefault');
+                    const overlayEl = document.getElementById('albumGifOverlay');
+                    if (defEl && defEl.src) defEl.style.display = 'block';
+                    if (overlayEl && overlayEl.src) overlayEl.style.display = 'block';
+                    scheduleNextGifRotation();
+                } else {
+                    showAlbumArtPlaceholder();
+                }
+                return;
+            }
 
             if (
                 typeof albumArtUrl === 'string' &&

@@ -52,8 +52,22 @@ const getAppBasePath = () => {
   return exeDir;
 };
 
-const GIFS_DIR = path.join(getAppBasePath(), 'gifs');
+/**
+ * GIFs live outside the app folder so a portable build can still be updated/replaced
+ * without losing the user's library. Documents is writable and survives moving the exe.
+ */
+function getGifsDir() {
+  const home = os.homedir();
+  const documents = path.join(home, 'Documents');
+  const base = fs.existsSync(documents) ? documents : home;
+  return path.join(base, 'SoundCloud Mini Player');
+}
+
+const GIFS_DIR = getGifsDir();
 const GIF_CONFIG_PATH = path.join(GIFS_DIR, 'config.json');
+
+/** Legacy in-app folder — picked up once so existing libraries move over. */
+const LEGACY_GIFS_DIR = path.join(getAppBasePath(), 'gifs');
 
 const DEFAULT_SPOTIFY_CONFIG = {
   savePlaylistUri: '',
@@ -102,32 +116,52 @@ function resolveAppIconPath() {
 
 // Create gifs directory if it doesn't exist (for portable mode)
 function ensureGifsDirectory() {
-  if (!fs.existsSync(GIFS_DIR)) {
-    try {
-      fs.mkdirSync(GIFS_DIR, { recursive: true });
-      // Create default config.json if it doesn't exist
-      if (!fs.existsSync(GIF_CONFIG_PATH)) {
-        fs.writeFileSync(GIF_CONFIG_PATH, JSON.stringify({
-          files: [],
-          gifRotateMs: 10000,
-          fallbackLoopMs: 10000
-        }, null, 2));
+  try {
+    fs.mkdirSync(GIFS_DIR, { recursive: true });
+
+    // Move an existing bundled library to the writable user folder once.
+    if (LEGACY_GIFS_DIR !== GIFS_DIR && fs.existsSync(LEGACY_GIFS_DIR)) {
+      for (const name of fs.readdirSync(LEGACY_GIFS_DIR)) {
+        if (!/\.gif$/i.test(name)) continue;
+        const from = path.join(LEGACY_GIFS_DIR, name);
+        const to = path.join(GIFS_DIR, name);
+        if (!fs.existsSync(to) && fs.statSync(from).isFile()) fs.copyFileSync(from, to);
       }
-      console.log(`Created GIFs directory at: ${GIFS_DIR}`);
-    } catch (err) {
-      console.warn('Failed to create GIFs directory:', err.message);
     }
+
+    if (!fs.existsSync(GIF_CONFIG_PATH)) {
+      fs.writeFileSync(GIF_CONFIG_PATH, JSON.stringify({
+        enabled: true,
+        files: [],
+        gifRotateMs: 10000,
+        fallbackLoopMs: 10000,
+      }, null, 2));
+    }
+    console.log(`GIF folder: ${GIFS_DIR}`);
+  } catch (err) {
+    console.warn('Failed to create GIFs directory:', err.message);
   }
 }
 
 function readGifConfig() {
-  if (!fs.existsSync(GIF_CONFIG_PATH)) return {};
+  if (!fs.existsSync(GIF_CONFIG_PATH)) return { enabled: true };
   try {
-    return JSON.parse(fs.readFileSync(GIF_CONFIG_PATH, 'utf8'));
+    const cfg = JSON.parse(fs.readFileSync(GIF_CONFIG_PATH, 'utf8'));
+    return { ...cfg, enabled: cfg.enabled !== false };
   } catch (e) {
     console.warn('gifs/config.json:', e.message);
-    return {};
+    return { enabled: true };
   }
+}
+
+function writeGifConfig(patch) {
+  const next = { ...readGifConfig(), ...patch };
+  try {
+    fs.writeFileSync(GIF_CONFIG_PATH, JSON.stringify(next, null, 2));
+  } catch (err) {
+    console.warn('Failed to write gifs/config.json:', err.message);
+  }
+  return next;
 }
 
 function writeSaveTargetLog(cfg) {
@@ -279,8 +313,10 @@ function gifLoopDurationMs(absPath) {
 }
 
 function listGifFilenames() {
-  let fromConfig = [];
   const cfg = readGifConfig();
+  // Tray toggle: off means no GIF at all, even with files on disk.
+  if (!cfg.enabled) return [];
+  let fromConfig = [];
   if (Array.isArray(cfg.files)) fromConfig = cfg.files;
   else if (Array.isArray(cfg.gifs)) fromConfig = cfg.gifs;
 
@@ -652,6 +688,14 @@ function createTray() {
     }
   });
 
+  refreshTrayMenu();
+  return tray;
+}
+
+/** Rebuilds the menu so the GIF toggle shows its state (some Linux trays draw checkboxes faintly). */
+function refreshTrayMenu() {
+  if (!tray) return;
+  const gifOn = readGifConfig().enabled;
   tray.setContextMenu(
     Menu.buildFromTemplate([
       {
@@ -664,6 +708,24 @@ function createTray() {
             mainWindow.show();
             mainWindow.focus();
           }
+        },
+      },
+      {
+        label: `Use GIFs  ${gifOn ? '[✓]' : '[  ]'}`,
+        type: 'checkbox',
+        checked: gifOn,
+        click: (item) => {
+          const cfg = writeGifConfig({ enabled: item.checked });
+          refreshTrayMenu();
+          if (mainWindow && !mainWindow.isDestroyed()) {
+            mainWindow.webContents.send('gifs:enabled-changed', cfg.enabled);
+          }
+        },
+      },
+      {
+        label: 'Open GIF Folder',
+        click: () => {
+          shell.openPath(GIFS_DIR);
         },
       },
       {
@@ -684,7 +746,6 @@ function createTray() {
       },
     ]),
   );
-  return tray;
 }
 
 app.whenReady().then(() => {
@@ -750,6 +811,8 @@ ipcMain.on('send-command', (_event, command) => {
     sendBridgeCommand(command.action);
   }
 });
+
+ipcMain.handle('gifs:is-enabled', () => readGifConfig().enabled);
 
 ipcMain.handle('gifs:get-random', (_evt, opts) => {
   const exclude = opts && opts.exclude ? opts.exclude : null;

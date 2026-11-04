@@ -291,10 +291,8 @@
   }
 
   connectWebSocket();
-  // Background tabs: nothing can watch the mini player, so skip the poll.
-  setInterval(() => {
-    if (!document.hidden) sendTrackInfo();
-  }, 1200);
+  // Polls even in background tabs: the mini player still needs the update.
+  setInterval(sendTrackInfo, 1200);
 
   let lastUrl = location.href;
   const routeDebounce = () => {

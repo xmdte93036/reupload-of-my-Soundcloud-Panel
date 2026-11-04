@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "SoundCloud Mini Player",
-  "version": "3.0.0",
+  "version": "3.2.0",
   "description": "Bridges SoundCloud and Spotify in the browser to the desktop mini player.",
   "browser_specific_settings": {
     "gecko": {
