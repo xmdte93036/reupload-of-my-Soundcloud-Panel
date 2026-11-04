@@ -1,6 +1,6 @@
 {
   "name": "soundcloud-mini-player",
-  "version": "3.2.0",
+  "version": "3.3.0",
   "description": "SoundCloud mini-player with desktop visualizer and GIF artwork (open source)",
   "main": "main.js",
   "license": "MIT",

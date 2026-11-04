@@ -269,8 +269,10 @@ function writeAppDesktopShortcut() {
       ];
       if (icon) lines.push(`Icon=${icon}`);
       const file = path.join(dir, `${APP_DISPLAY_NAME}.desktop`);
-      fs.writeFileSync(file, `${lines.join('\n')}\n`, 'utf8');
-      fs.chmodSync(file, 0o755);
+      if (!fs.existsSync(file)) {
+        fs.writeFileSync(file, `${lines.join('\n')}\n`, 'utf8');
+        fs.chmodSync(file, 0o755);
+      }
     } else if (process.platform === 'win32') {
       const link = path.join(dir, `${APP_DISPLAY_NAME}.lnk`);
       const opts = {
@@ -280,7 +282,7 @@ function writeAppDesktopShortcut() {
       };
       if (!isPackaged) opts.args = '.';
       if (icon) opts.icon = icon;
-      if (!shell.writeShortcutLink(link, 'update', opts)) {
+      if (!fs.existsSync(link)) {
         shell.writeShortcutLink(link, 'create', opts);
       }
     }

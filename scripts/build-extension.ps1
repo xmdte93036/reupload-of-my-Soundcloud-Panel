@@ -74,7 +74,7 @@ Copy-Item -Force (Join-Path $ext "background-firefox.js") (Join-Path $ffDir "bac
 Copy-Item -Force (Join-Path $ext "popup-firefox.html") (Join-Path $ffDir "popup-firefox.html")
 Copy-Item -Force (Join-Path $ext "popup-firefox.js") (Join-Path $ffDir "popup-firefox.js")
 
-$ffXpi = Join-Path $dist "soundcloud-mini-player-firefox-v3.2.xpi"
+$ffXpi = Join-Path $dist "soundcloud-mini-player-firefox-v3.3.xpi"
 if (Test-Path $ffXpi) { Remove-Item -Force $ffXpi }
 
 # .xpi is a zip archive with manifest.json at root.

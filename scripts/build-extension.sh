@@ -50,12 +50,12 @@ copy_common "$FF"
 for f in background-firefox.js popup-firefox.html popup-firefox.js; do cp "$EXT/$f" "$FF/"; done
 # manifest-firefox.json is renamed to manifest.json in the built copy.
 cp "$EXT/manifest-firefox.json" "$FF/manifest.json"
-make_zip "$FF" "$DIST/soundcloud-mini-player-firefox-v3.2.xpi"
+make_zip "$FF" "$DIST/soundcloud-mini-player-firefox-v3.3.xpi"
 
 echo
 echo "Done:"
 echo " - $DIST/soundcloud-mini-player-chrome.zip"
-echo " - $DIST/soundcloud-mini-player-firefox-v3.2.xpi"
+echo " - $DIST/soundcloud-mini-player-firefox-v3.3.xpi"
 echo " - unpacked dirs: $CHROME, $FF"
 echo
 echo "Chrome/Edge: chrome://extensions -> Developer mode -> Load unpacked -> $CHROME"

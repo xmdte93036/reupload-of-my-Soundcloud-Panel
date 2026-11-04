@@ -10,8 +10,8 @@ Grab the latest files from **Releases**:
 
 | Platform | File |
 | --- | --- |
-| Linux | `SoundCloud Mini Player-3.2.0.AppImage` |
-| Windows | `SoundCloud Mini Player 3.2.0.exe` (portable, no installer) |
+| Linux | `SoundCloud Mini Player-3.3.0.AppImage` |
+| Windows | `SoundCloud Mini Player 3.3.0.exe` (portable, no installer) |
 
 On first launch the app writes a Desktop shortcut to itself.
 
@@ -23,7 +23,7 @@ On first launch the app writes a Desktop shortcut to itself.
 
 ## Linux (Mint / Ubuntu)
 
-1. Download the AppImage and mark it executable: `chmod +x "SoundCloud Mini Player-3.2.0.AppImage"`
+1. Download the AppImage and mark it executable: `chmod +x "SoundCloud Mini Player-3.3.0.AppImage"`
 2. Double-click it (or run it from a terminal)
 3. Chrome → Extensions → Developer mode → **Load unpacked** → select the `extension` folder
 4. Play something on SoundCloud or [open.spotify.com](https://open.spotify.com)
@@ -71,12 +71,15 @@ Linux/macOS:
 
 ```bash
 ./scripts/build-extension.sh
+./scripts/install-spicetify-extension.sh
+./scripts/bump-version.sh
 ```
 
 Windows:
 
 ```powershell
 .\scripts\build-extension.ps1
+.\scripts\install-spicetify-extension.ps1
 ```
 
 Both produce the same output:
@@ -86,7 +89,7 @@ Both produce the same output:
 | `dist/extension-chrome/` | Chrome/Edge — load unpacked |
 | `dist/extension-firefox/` | Firefox — load temporary add-on |
 | `dist/soundcloud-mini-player-chrome.zip` | Upload to the Chrome Web Store |
-| `dist/soundcloud-mini-player-firefox-v3.2.xpi` | Upload to AMO |
+| `dist/soundcloud-mini-player-firefox-v3.3.xpi` | Upload to AMO |
 
 The Firefox build renames `manifest-firefox.json` to `manifest.json`, so load `dist/extension-firefox/manifest.json` — not the source folder.
 
